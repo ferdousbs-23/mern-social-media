@@ -10,6 +10,7 @@ const passport = require("passport");
 //routes
 const userRoutes = require("./routes/users");   
 const authRoutes = require("./routes/auth");   
+const postRoutes = require("./routes/posts");   
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ require('./config/passport')(passport);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
 
 app.listen(process.env.port || 5000, () => {
     console.log('server running');
