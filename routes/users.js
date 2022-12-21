@@ -16,9 +16,24 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+//get logged in user
+router.get('/get/own', async (req, res) => {
+    try {
+        const user = await User.findById(req.userId);
+        const {password, updatedAt, ...userData} = user._doc;
+
+        res.status(200).json({
+            "success": true,
+            "data": userData
+        });
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+});
+
 //update user
 router.put('/:id', async (req, res) => {
-    if (req.body.userId == req.params.id || req.body.isAdmin) {
+    if (req.userId == req.params.id || req.body.isAdmin) {
         if (req.body.password) {
             try {
                 const salt = await bcrpyt.genSalt(10);
@@ -48,7 +63,7 @@ router.put('/:id', async (req, res) => {
 
 //delete user
 router.delete('/:id', async (req, res) => {
-    if (req.body.userId == req.params.id || req.body.isAdmin) {
+    if (req.userId == req.params.id || req.body.isAdmin) {
         try {
             const user = await User.findByIdAndDelete(req.params.id);
 
@@ -66,13 +81,13 @@ router.delete('/:id', async (req, res) => {
 
 //follow user
 router.post('/:id/follow', async (req, res) => {
-    if (req.body.userId != req.params.id) {
+    if (req.userId != req.params.id) {
         try {
             const user = await User.findById(req.params.id);
-            const curretUser = await User.findById(req.body.userId);
+            const curretUser = await User.findById(req.userId);
 
             if(!curretUser.following.includes(req.params.id)){
-                await user.updateOne({$push: { followers: req.body.userId }});
+                await user.updateOne({$push: { followers: req.userId }});
                 await curretUser.updateOne({$push: { following: req.params.id }});
 
                 res.status(200).json({
@@ -95,13 +110,13 @@ router.post('/:id/follow', async (req, res) => {
 
 //unfollow user
 router.post('/:id/unfollow', async (req, res) => {
-    if (req.body.userId != req.params.id) {
+    if (req.userId != req.params.id) {
         try {
             const user = await User.findById(req.params.id);
-            const curretUser = await User.findById(req.body.userId);
+            const curretUser = await User.findById(req.userId);
 
             if(curretUser.following.includes(req.params.id)){
-                await user.updateOne({$pull: { followers: req.body.userId }});
+                await user.updateOne({$pull: { followers: req.userId }});
                 await curretUser.updateOne({$pull: { following: req.params.id }});
 
                 res.status(200).json({
